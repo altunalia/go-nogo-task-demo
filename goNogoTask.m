@@ -43,7 +43,6 @@ if exist(obsFidB, 'dir') < 1
 end
 
 
-
 %--------------------
 %   Screen setup
 %--------------------
@@ -73,7 +72,6 @@ colours = struct('black', [0, 0, 0], 'white', [255, 255, 255], ...
     'red', [255, 0  , 0  ], 'blue', [0  , 0, 205  ]);
 
 if debugMode == 1
-
     % Open the screen
     [window, windowRect] = PsychImaging('OpenWindow', screenNumber, grey, [0 0 800 450], [], [], [], [], [], kPsychGUIWindow);
 
@@ -85,15 +83,13 @@ end
 % Flip to clear
 Screen('Flip', window);
 
-%Query the inter-frame-interval. This refers to the minimum possible time
+% Query the inter-frame-interval. This refers to the minimum possible time
 % between drawing to the screen
 ifi = Screen('GetFlipInterval', window);
-
 
 % Setup the text type for the window
 Screen('TextFont', window, 'Ariel');
 Screen('TextSize', window, 40);
-
 
 % Query and set the maximum priority level
 topPriorityLevel = MaxPriority(window);
@@ -131,9 +127,6 @@ lineWidthPix = 4;
 % size of our rectangle in pixels.
 % The coordinates define the top left and bottom right coordinates of our rect
 % [top-left-x top-left-y bottom-right-x bottom-right-y].
-% The easiest thing to do is set the first two coordinates to 0,
-% then the last two numbers define the length of the rect in X and Y. 
-% The next line of code then centers the rect on a particular location of the screen.
 baseRect = [0 0 200 200];
 
 % Center the rectangle on the centre of the screen using fractional pixel
@@ -147,12 +140,11 @@ centeredRect = CenterRectOnPointd(baseRect, xCenter, yCenter);
 %----------------------------------------------------------------------
 
 % Here we determine the presentation time for stimuli and calculating the
-% corresponded frames. It is important for precise presentation.
+% corresponded frames. It is important for precise timing.
 
 % Fixation point time in seconds and frames
 fixTimeSecs = 0.5;
 fixTimeFrames = round(fixTimeSecs / ifi);
-
 
 % Stimuli time in seconds and frames
 stimTimeSecs = 2;
@@ -161,7 +153,6 @@ stimTimeFrames = round(stimTimeSecs / ifi);
 % Intertrial interval time
 isiTimeSecs = 0.5;
 isiTimeFrames = round(isiTimeSecs / ifi);
-
 
 % Frames to wait before redrawing
 waitframes = 1;
@@ -237,7 +228,7 @@ for trial = 1:numTrials
         KbStrokeWait(-1);
 
         % Draw the instructions
-        DrawFormattedText(window, 'You will either see a blue \n\n or a red square.\n\n\n If you see the blue, press spacebar.\n\n If you see the red, do nothing!\n\n\n Press any key to continue', 'center', 'center', black);
+        DrawFormattedText(window, 'You will either see a blue \n\n or a red square.\n\n\n If you see the blue, press the spacebar as quickly as possible.\n\n If you see the red, do nothing!\n\n\n Press any key to continue', 'center', 'center', black);
 
         % Flip to the screen
         Screen('Flip', window);
@@ -270,7 +261,8 @@ for trial = 1:numTrials
 
         vbl = Screen('Flip', window, vbl + (waitframes - 0.5) * ifi);
     end
-
+    
+    % Set data variables for this trial
     startResp = GetSecs;
     response = 0;
     rt = NaN;                        
@@ -292,12 +284,12 @@ for trial = 1:numTrials
             sca;
             return
         elseif keyCode(spaceKey)
+            % Update data variables if space pressed
             response = 1;
             endResp = GetSecs;
             rt = endResp - startResp;
             break
         end
-
     end
 
     % Clear the screen ready for a response
@@ -305,19 +297,17 @@ for trial = 1:numTrials
     vbl = Screen('Flip', window, vbl + (1 - 0.5) * ifi);
 
     % Work out if the response for Go task was identified correctly
+    % and get correctness data
     if taskCon == response 
         correctness = 1;
     elseif taskCon ~= response 
         correctness = 0;
     end
 
-    % Add the data to the data matrix
+    % Add the data to the data matrix for this trial
     dataMat(trial, :) = [taskCon response rt correctness];
     
-    % Inter trial interval black screen. Note that the timestamp for the
-    % initial frame will be missed due to the first vbl being "old" due to
-    % the response loop. I leave it as an excercise to the reader as to how
-    % one could fix this simply.
+    % Inter trial interval screen
     for i = 1:isiTimeFrames
         Screen('FillRect', window, grey);
         vbl = Screen('Flip', window, vbl + (waitframes - 0.5) * ifi);
